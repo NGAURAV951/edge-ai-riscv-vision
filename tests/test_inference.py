@@ -17,3 +17,14 @@ def test_demo_frame_is_alert():
 def test_zero_frame_is_safe():
     result = EdgeClassifier().predict(np.zeros((32, 32), dtype=np.uint8))
     assert result.label == "SAFE"
+
+
+def test_accelerator_score_matches_reference():
+    frame = make_demo_frame()
+    classifier = EdgeClassifier()
+
+    reference_score, reference_features = classifier.score(frame)
+    accelerator_score, accelerator_features = classifier.accelerator_score(frame)
+
+    assert accelerator_score == reference_score
+    assert np.array_equal(accelerator_features, reference_features)
