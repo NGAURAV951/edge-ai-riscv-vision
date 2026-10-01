@@ -23,9 +23,15 @@ int main(void)
 
     printf("STATUS = 0x%02X\n",
            accelerator_status());
-    printf("RESULT REGISTER = 0x%04X\n",
-           accelerator_read_result());
-    printf("DRIVER_TEST_PASS\n");
+
+    uint16_t result = accelerator_read_result();
+
+    printf("RESULT REGISTER = 0x%04X\n", result);
+
+    if (result == 300)
+        printf("DRIVER_TEST_PASS result=%u\n", result);
+    else
+        printf("DRIVER_TEST_FAIL result=%u expected=300\n", result);
 
     return 0;
 }
