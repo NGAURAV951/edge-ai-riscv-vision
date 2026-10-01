@@ -11,6 +11,8 @@ module tb_accelerator_regs;
     logic [7:0] rd_data;
     logic       busy;
     logic       done;
+    logic [7:0] result_low;
+    logic [7:0] result_high;
 
     accelerator_regs dut (
         .clk(clk),
@@ -81,13 +83,16 @@ module tb_accelerator_regs;
 
         // Expected result:
         // 1*10 + 2*20 + 3*30 + 4*40 = 300
-        read_reg(4'hA);
+      read_reg(4'hA);
+result_low = rd_data;
 
-        if (rd_data == 8'd44)
-            $display("ACCELERATOR_REGS_PASS result=%0d", rd_data);
-        else
-            $display("ACCELERATOR_REGS_FAIL result=%0d expected=44", rd_data);
+read_reg(4'hB);
+result_high = rd_data;
 
+if ((result_low == 8'h2C) && (result_high == 8'h01))
+    $display("ACCELERATOR_REGS_PASS result=0x%02h%02h", result_high, result_low);
+else
+    $display("ACCELERATOR_REGS_FAIL result=0x%02h%02h expected=0x012C", result_high, result_low);
         $finish;
     end
 

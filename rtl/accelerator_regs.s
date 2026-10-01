@@ -46,7 +46,8 @@ module accelerator_regs #(
     localparam ADDR_CTRL   = 4'h8;
     localparam ADDR_STATUS = 4'h9;
     localparam ADDR_RESULT = 4'hA;
-
+    localparam ADDR_RESULT_HIGH = 4'hB;
+    
     // Actual hardware accelerator
     dot_product #(
         .N(N)
@@ -123,6 +124,8 @@ module accelerator_regs #(
 
                 ADDR_RESULT:
                     rd_data = result[7:0];
+                ADDR_RESULT_HIGH:
+                    rd_data = result[15:8];
 
                 default:
                     rd_data = 8'h00;
