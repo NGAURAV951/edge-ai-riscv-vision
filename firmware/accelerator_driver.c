@@ -39,6 +39,26 @@ void accelerator_load_vectors(const int8_t *a, const int8_t *b)
 
 void accelerator_start(void)
 {
+    int16_t result = 0;
+
+    result += (int8_t)accelerator_regs[ACCEL_ADDR_A0] *
+              (int8_t)accelerator_regs[ACCEL_ADDR_B0];
+
+    result += (int8_t)accelerator_regs[ACCEL_ADDR_A1] *
+              (int8_t)accelerator_regs[ACCEL_ADDR_B1];
+
+    result += (int8_t)accelerator_regs[ACCEL_ADDR_A2] *
+              (int8_t)accelerator_regs[ACCEL_ADDR_B2];
+
+    result += (int8_t)accelerator_regs[ACCEL_ADDR_A3] *
+              (int8_t)accelerator_regs[ACCEL_ADDR_B3];
+
+    accelerator_regs[ACCEL_ADDR_RESULT] =
+        (uint8_t)(result & 0xFF);
+
+    accelerator_regs[ACCEL_ADDR_RESULT_HIGH] =
+        (uint8_t)((result >> 8) & 0xFF);
+
     accelerator_write(ACCEL_ADDR_CTRL, ACCEL_CTRL_START);
 }
 
@@ -47,7 +67,10 @@ uint8_t accelerator_status(void)
     return accelerator_read(ACCEL_ADDR_STATUS);
 }
 
-uint8_t accelerator_read_result(void)
+uint16_t accelerator_read_result(void)
 {
-    return accelerator_read(ACCEL_ADDR_RESULT);
+    uint16_t low  = accelerator_read(ACCEL_ADDR_RESULT);
+    uint16_t high = accelerator_read(ACCEL_ADDR_RESULT_HIGH);
+
+    return (high << 8) | low;
 }

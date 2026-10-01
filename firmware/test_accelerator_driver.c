@@ -23,10 +23,8 @@ int main(void)
 
     printf("STATUS = 0x%02X\n",
            accelerator_status());
-
-    printf("RESULT REGISTER = 0x%02X\n",
+    printf("RESULT REGISTER = 0x%04X\n",
            accelerator_read_result());
-
     printf("DRIVER_TEST_PASS\n");
 
     return 0;

@@ -26,6 +26,7 @@
 #define ACCEL_ADDR_CTRL     0x08
 #define ACCEL_ADDR_STATUS   0x09
 #define ACCEL_ADDR_RESULT   0x0A
+#define ACCEL_ADDR_RESULT_HIGH  0x0B
 
 #define ACCEL_CTRL_START    0x01
 
@@ -45,6 +46,5 @@ uint8_t accelerator_read(uint8_t address);
 void accelerator_load_vectors(const int8_t *a, const int8_t *b);
 void accelerator_start(void);
 uint8_t accelerator_status(void);
-uint8_t accelerator_read_result(void);
-
+uint16_t accelerator_read_result(void);
 #endif
