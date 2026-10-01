@@ -30,13 +30,15 @@ class EdgeClassifier:
     def accelerator_score(self, frame):
         x = self.features(frame)
 
-        a = x
-        b = self.weights
+        a = np.array([x[0], x[1], x[2], 0], dtype=np.int16)
+        b = np.array([self.weights[0], self.weights[1], self.weights[2], 0], dtype=np.int16)
+        
 
         dot_product = int(
             a[0] * b[0] +
             a[1] * b[1] +
-            a[2] * b[2]
+            a[2] * b[2] +
+            a[3] * b[3]
         )
 
         return dot_product + int(self.bias), x
@@ -47,3 +49,10 @@ class EdgeClassifier:
         confidence = float(1.0 / (1.0 + np.exp(-score / 100.0)))
 
         return Prediction(label, confidence, x)
+
+
+
+
+
+
+
