@@ -14,3 +14,4 @@ dist/
 *.exe
 data/mnist.npz
 models/mnist_linear.npz
+models/mnist_linear_int8.npz

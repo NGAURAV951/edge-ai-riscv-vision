@@ -28,3 +28,23 @@ def test_accelerator_score_matches_reference():
 
     assert accelerator_score == reference_score
     assert np.array_equal(accelerator_features, reference_features)
+
+def test_int8_inference_matches_label():
+    from ai.mnist_int8 import MNISTInt8Classifier
+
+    data = np.load("data/mnist.npz")
+
+    classifier = MNISTInt8Classifier()
+
+    correct = 0
+
+    for i in range(100):
+        image = data["images"][i].reshape(28, 28)
+        label = int(data["labels"][i])
+
+        prediction, _ = classifier.predict(image)
+
+        if prediction == label:
+            correct += 1
+
+    assert correct >= 90
