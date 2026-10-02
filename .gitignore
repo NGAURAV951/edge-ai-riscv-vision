@@ -11,3 +11,4 @@ dist/
 *.o
 *.out
 *_sim
+*.exe

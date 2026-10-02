@@ -10,7 +10,7 @@
  * B0-B3   : Vector B elements
  * CTRL    : Write 1 to start
  * STATUS  : Busy / Done
- * RESULT  : Low 8 bits of result
+ * RESULT / RESULT_HIGH : 16-bit accelerator result
  */
 
 #define ACCEL_ADDR_A0       0x00
