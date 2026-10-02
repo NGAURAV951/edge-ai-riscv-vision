@@ -1,30 +1,31 @@
-#include "accelerator_driver.h"
-
 /*
- * Software model of the memory-mapped accelerator registers.
+ * Edge-AI RISC-V Vision
+ * Software model of the accelerator driver.
  *
- * On a real RISC-V SoC, these would point to hardware addresses.
- * For now, we use an array so the driver can be compiled and tested
- * safely on a normal computer.
+ * This file models the memory-mapped register behavior that
+ * the future RISC-V/FPGA implementation will expose.
  */
 
-static uint8_t accelerator_regs[16];
+#include "accelerator_driver.h"
+
+#include <stdio.h>
+
+static uint8_t registers[16];
 
 void accelerator_write(uint8_t address, uint8_t value)
 {
-    if (address < 16)
-        accelerator_regs[address] = value;
+    registers[address] = value;
 }
 
 uint8_t accelerator_read(uint8_t address)
 {
-    if (address < 16)
-        return accelerator_regs[address];
-
-    return 0;
+    return registers[address];
 }
 
-void accelerator_load_vectors(const int8_t *a, const int8_t *b)
+void accelerator_load_vectors(
+    const int8_t *a,
+    const int8_t *b
+)
 {
     accelerator_write(ACCEL_ADDR_A0, (uint8_t)a[0]);
     accelerator_write(ACCEL_ADDR_A1, (uint8_t)a[1]);
@@ -39,27 +40,46 @@ void accelerator_load_vectors(const int8_t *a, const int8_t *b)
 
 void accelerator_start(void)
 {
-    int16_t result = 0;
+    int8_t a[4];
+    int8_t b[4];
 
-    result += (int8_t)accelerator_regs[ACCEL_ADDR_A0] *
-              (int8_t)accelerator_regs[ACCEL_ADDR_B0];
+    int32_t result;
 
-    result += (int8_t)accelerator_regs[ACCEL_ADDR_A1] *
-              (int8_t)accelerator_regs[ACCEL_ADDR_B1];
+    a[0] = (int8_t)accelerator_read(ACCEL_ADDR_A0);
+    a[1] = (int8_t)accelerator_read(ACCEL_ADDR_A1);
+    a[2] = (int8_t)accelerator_read(ACCEL_ADDR_A2);
+    a[3] = (int8_t)accelerator_read(ACCEL_ADDR_A3);
 
-    result += (int8_t)accelerator_regs[ACCEL_ADDR_A2] *
-              (int8_t)accelerator_regs[ACCEL_ADDR_B2];
+    b[0] = (int8_t)accelerator_read(ACCEL_ADDR_B0);
+    b[1] = (int8_t)accelerator_read(ACCEL_ADDR_B1);
+    b[2] = (int8_t)accelerator_read(ACCEL_ADDR_B2);
+    b[3] = (int8_t)accelerator_read(ACCEL_ADDR_B3);
 
-    result += (int8_t)accelerator_regs[ACCEL_ADDR_A3] *
-              (int8_t)accelerator_regs[ACCEL_ADDR_B3];
+    result =
+        (int32_t)a[0] * b[0] +
+        (int32_t)a[1] * b[1] +
+        (int32_t)a[2] * b[2] +
+        (int32_t)a[3] * b[3];
 
-    accelerator_regs[ACCEL_ADDR_RESULT] =
-        (uint8_t)(result & 0xFF);
+    accelerator_write(
+        ACCEL_ADDR_RESULT,
+        (uint8_t)(result & 0xFF)
+    );
 
-    accelerator_regs[ACCEL_ADDR_RESULT_HIGH] =
-        (uint8_t)((result >> 8) & 0xFF);
+    accelerator_write(
+        ACCEL_ADDR_RESULT_HIGH,
+        (uint8_t)((result >> 8) & 0xFF)
+    );
 
-    accelerator_write(ACCEL_ADDR_CTRL, ACCEL_CTRL_START);
+    accelerator_write(
+        ACCEL_ADDR_CTRL,
+        ACCEL_CTRL_START
+    );
+
+    accelerator_write(
+        ACCEL_ADDR_STATUS,
+        ACCEL_STATUS_DONE
+    );
 }
 
 uint8_t accelerator_status(void)
@@ -69,8 +89,11 @@ uint8_t accelerator_status(void)
 
 uint16_t accelerator_read_result(void)
 {
-    uint16_t low  = accelerator_read(ACCEL_ADDR_RESULT);
-    uint16_t high = accelerator_read(ACCEL_ADDR_RESULT_HIGH);
+    uint16_t low;
+    uint16_t high;
 
-    return (high << 8) | low;
+    low = accelerator_read(ACCEL_ADDR_RESULT);
+    high = accelerator_read(ACCEL_ADDR_RESULT_HIGH);
+
+    return (uint16_t)(low | (high << 8));
 }
