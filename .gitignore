@@ -12,3 +12,4 @@ dist/
 *.out
 *_sim
 *.exe
+data/mnist.npz
