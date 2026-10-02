@@ -13,3 +13,4 @@ dist/
 *_sim
 *.exe
 data/mnist.npz
+models/mnist_linear.npz
