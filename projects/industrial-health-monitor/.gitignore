@@ -1,0 +1,7 @@
+build/
+*.o
+*.out
+*.exe
+*.vcd
+__pycache__/
+*.py[cod]
