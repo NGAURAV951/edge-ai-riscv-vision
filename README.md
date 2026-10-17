@@ -69,10 +69,12 @@ The Python tiled reference checks that splitting a 784-element dot product into 
 | 0x10–0x1F | B[0]–B[15] | Signed 8-bit vector B |
 | 0x20 | CTRL | Write bit 0 as 1 to request a start |
 | 0x21 | STATUS | Bit 0 = busy, bit 1 = done |
-| 0x22 | RESULT | Result bits [7:0] |
-| 0x23 | RESULT_HIGH | Result bits [15:8] |
+| 0x22 | RESULT_BYTE_0 | Result bits [7:0] |
+| 0x23 | RESULT_BYTE_1 | Result bits [15:8] |
+| 0x24 | RESULT_BYTE_2 | Result bits [23:16] |
+| 0x25 | RESULT_BYTE_3 | Result bits [31:24] |
 
-The RTL accumulates into 32 bits, while the current register interface exposes the low 16 result bits through the two result registers.
+The register interface exposes the complete signed 32-bit accumulator result across four byte-wide registers. Software should combine the bytes in little-endian order (0x22 is the least-significant byte).
 
 ## Verification
 
@@ -81,7 +83,8 @@ The project includes multiple independent checks:
 - A tiled dot-product comparison against NumPy
 - Comparison of tiled and non-tiled MNIST predictions
 - RTL testbenches for signed dot-product arithmetic and latency
-- RTL testbench for register writes, status, and result reads
+- RTL testbench for register writes, status, and all four result bytes
+- Full 32-bit signed-result readback check
 - A C driver-model test for register-control concepts
 
 Representative simulation markers include:
@@ -93,9 +96,11 @@ LATENCY_PASS
 STATUS_PASS
 RESULT_PASS
 REGISTER_LATENCY_PASS
+FULL_32BIT_RESULT_PASS
+ALL_REGISTER_TESTS_PASS
 ~~~
 
-The signed 16-element RTL test uses the vectors A = [1, -2, 3, -4, ..., 15, -16] and B = [1, 2, 3, 4, ..., 15, 16], with an expected dot product of **-136**.
+The signed 16-element RTL test uses the vectors A = [1, -2, 3, -4, ..., 15, -16] and B = [1, 2, 3, 4, ..., 15, 16], with an expected dot product of **-136**. The register-interface test verifies the full result as **0xFFFFFF78** (signed **-136**), confirms status **0x02** (done=1, busy=0), and checks a measured completion latency of **17 cycles** in simulation.
 
 The MNIST accuracy figure previously recorded for this project is **94/100 (94%) on a 100-image spot check**. This is a small spot check, not a full-dataset accuracy claim. Reproduce MNIST checks only when the required dataset is available locally.
 
@@ -185,7 +190,6 @@ Future development could include:
 - Deploying to an FPGA board
 - Integrating a RISC-V processor and a real bus interface
 - Connecting the software driver to the hardware implementation
-- Exposing and validating the full 32-bit result through the register map
 - Running a reproducible full MNIST test-set evaluation
 - Measuring hardware latency, resource use, and power
 
