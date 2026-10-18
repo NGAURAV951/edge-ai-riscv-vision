@@ -6,6 +6,8 @@ on:
     paths:
       - "website/**"
       - "ai/**"
+      - "tests/**"
+      - "tests/**"
       - "requirements.txt"
       - ".github/workflows/website-smoke.yml"
   pull_request:
