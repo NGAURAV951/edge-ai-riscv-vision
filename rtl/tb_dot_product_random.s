@@ -10,8 +10,8 @@ module tb_dot_product_random;
     logic clk;
     logic rst;
     logic start;
-    logic signed [7:0] a [N];
-    logic signed [7:0] b [N];
+    logic [N*8-1:0] a_bytes;
+    logic [N*8-1:0] b_bytes;
     logic signed [31:0] result;
     logic done;
     logic busy;
@@ -22,13 +22,12 @@ module tb_dot_product_random;
     integer expected_result;
     integer operand_a;
     integer operand_b;
-    integer timeout_count;
     integer seed_state;
     logic [31:0] random_word;
 
     dot_product #(.N(N)) dut (
         .clk(clk), .rst(rst), .start(start),
-        .a(a), .b(b), .result(result), .done(done), .busy(busy)
+        .a_bytes(a_bytes), .b_bytes(b_bytes), .result(result), .done(done), .busy(busy)
     );
 
     always #5 clk = ~clk;
@@ -54,40 +53,40 @@ module tb_dot_product_random;
             for (k = 0; k < N; k = k + 1) begin
                 case (this_case)
                     0: begin // all-zero inputs
-                        a[k] = 8'sd0;
-                        b[k] = 8'sd0;
+                        a_bytes[k*8 +: 8] = 8'sd0;
+                        b_bytes[k*8 +: 8] = 8'sd0;
                     end
                     1: begin // maximum positive operands
-                        a[k] = 8'sd127;
-                        b[k] = 8'sd127;
+                        a_bytes[k*8 +: 8] = 8'sd127;
+                        b_bytes[k*8 +: 8] = 8'sd127;
                     end
                     2: begin // minimum negative operands
-                        a[k] = -8'sd128;
-                        b[k] = -8'sd128;
+                        a_bytes[k*8 +: 8] = -8'sd128;
+                        b_bytes[k*8 +: 8] = -8'sd128;
                     end
                     3: begin // alternating opposite signs and extremes
-                        a[k] = (k % 2 == 0) ? -8'sd128 : 8'sd127;
-                        b[k] = (k % 2 == 0) ? 8'sd127 : -8'sd128;
+                        a_bytes[k*8 +: 8] = (k % 2 == 0) ? -8'sd128 : 8'sd127;
+                        b_bytes[k*8 +: 8] = (k % 2 == 0) ? 8'sd127 : -8'sd128;
                     end
                     4: begin // boundary values mixed across each vector
                         case (k % 4)
-                            0: begin a[k] = -8'sd128; b[k] = 8'sd127; end
-                            1: begin a[k] = -8'sd1;   b[k] = -8'sd128; end
-                            2: begin a[k] = 8'sd0;    b[k] = 8'sd127; end
-                            3: begin a[k] = 8'sd127;  b[k] = -8'sd1; end
+                            0: begin a_bytes[k*8 +: 8] = -8'sd128; b_bytes[k*8 +: 8] = 8'sd127; end
+                            1: begin a_bytes[k*8 +: 8] = -8'sd1;   b_bytes[k*8 +: 8] = -8'sd128; end
+                            2: begin a_bytes[k*8 +: 8] = 8'sd0;    b_bytes[k*8 +: 8] = 8'sd127; end
+                            3: begin a_bytes[k*8 +: 8] = 8'sd127;  b_bytes[k*8 +: 8] = -8'sd1; end
                         endcase
                     end
                     default: begin
                         random_word = next_random();
-                        a[k] = random_word[7:0];
+                        a_bytes[k*8 +: 8] = random_word[7:0];
                         random_word = next_random();
-                        b[k] = random_word[7:0];
+                        b_bytes[k*8 +: 8] = random_word[7:0];
                     end
                 endcase
 
                 // Widen operands before multiplication to avoid 8-bit math.
-                operand_a = $signed(a[k]);
-                operand_b = $signed(b[k]);
+                operand_a = $signed(a_bytes[k*8 +: 8]);
+                operand_b = $signed(b_bytes[k*8 +: 8]);
                 expected_result = expected_result + (operand_a * operand_b);
             end
 
@@ -97,11 +96,9 @@ module tb_dot_product_random;
             @(negedge clk);
             start = 1'b0;
 
-            timeout_count = 0;
-            while ((done !== 1'b1) && (timeout_count < N + 5)) begin
-                @(posedge clk);
-                timeout_count = timeout_count + 1;
-            end
+            // Catch the one-cycle completion pulse without a posedge race.
+            // The global watchdog above prevents this wait from hanging forever.
+            wait (done === 1'b1);
             #1;
 
             if (done !== 1'b1)
@@ -128,8 +125,8 @@ module tb_dot_product_random;
         tests_passed = 0;
         seed_state = 32'h51A7E123;
         for (j = 0; j < N; j = j + 1) begin
-            a[j] = 8'sd0;
-            b[j] = 8'sd0;
+            a_bytes[j*8 +: 8] = 8'sd0;
+            b_bytes[j*8 +: 8] = 8'sd0;
         end
 
         repeat (3) @(negedge clk);

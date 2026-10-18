@@ -17,8 +17,8 @@ module accelerator_regs #(
     output logic done
 );
 
-    logic signed [7:0] a [N];
-    logic signed [7:0] b [N];
+    logic [N*8-1:0] a_bytes;
+    logic [N*8-1:0] b_bytes;
 
     logic start;
     logic accel_done;
@@ -47,8 +47,8 @@ module accelerator_regs #(
         .clk(clk),
         .rst(rst),
         .start(start),
-        .a(a),
-        .b(b),
+        .a_bytes(a_bytes),
+        .b_bytes(b_bytes),
         .result(result),
         .done(accel_done),
         .busy(accel_busy)
@@ -63,8 +63,8 @@ module accelerator_regs #(
             done  <= 1'b0;
 
             for (i = 0; i < N; i = i + 1) begin
-                a[i] <= 8'sd0;
-                b[i] <= 8'sd0;
+                a_bytes[i*8 +: 8] <= 8'h00;
+                b_bytes[i*8 +: 8] <= 8'h00;
             end
         end
         else begin
@@ -73,12 +73,12 @@ module accelerator_regs #(
             if (wr_en) begin
                 // Write input vector A: addresses 0x00-0x0F
                 if (addr >= ADDR_A0 && addr < ADDR_B0) begin
-                    a[addr - ADDR_A0] <= $signed(wr_data);
+                    a_bytes[{addr[3:0], 3'b000} +: 8] <= wr_data;
                 end
 
                 // Write input vector B: addresses 0x10-0x1F
                 else if (addr >= ADDR_B0 && addr < ADDR_CTRL) begin
-                    b[addr - ADDR_B0] <= $signed(wr_data);
+                    b_bytes[{addr[3:0], 3'b000} +: 8] <= wr_data;
                 end
 
                 // Start command: write bit 0 to address 0x20

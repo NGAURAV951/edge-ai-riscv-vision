@@ -1,6 +1,6 @@
 # Edge-AI RISC-V Vision System
 
-[![RTL Regression](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/rtl-regression.yml/badge.svg?branch=main)](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/rtl-regression.yml)
+[![RTL Regression](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/rtl-regression.yml/badge.svg?branch=main)](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/rtl-regression.yml) [![Yosys Synthesis](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/yosys-synthesis.yml/badge.svg?branch=main)](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/yosys-synthesis.yml)
 
 A hardware-aware Edge AI project exploring INT8 inference, tiled dot-product computation, embedded C driver modeling, and a SystemVerilog accelerator with a memory-mapped register interface.
 
@@ -57,7 +57,7 @@ The Python tiled reference checks that splitting a 784-element dot product into 
 | Input shape for MNIST | 28 × 28 pixels = 784 values |
 | Tile size | 16 elements |
 | Tiles per 784-element vector | 49 |
-| RTL arithmetic | Signed 8-bit operands |
+| RTL arithmetic | Signed 8-bit operands read from packed byte vectors |
 | Accumulator | Signed 32-bit |
 | MAC architecture | Sequential, one element per clock while busy |
 | Register interface | Vector A, vector B, control, status, and result bytes |
@@ -86,7 +86,6 @@ The project includes multiple independent checks:
 - 105 RTL dot-product cases: five directed edge cases and 100 deterministic pseudo-random input-vector tests
 - Comparison of tiled and non-tiled MNIST predictions
 - RTL testbenches for signed dot-product arithmetic and latency
-- Deterministic directed and pseudo-random RTL tests: five edge-case scenarios plus 100 reproducible randomized vectors
 - Optional Yosys generic synthesis/statistics report generated in CI
 - RTL testbench for register writes, status, and all four result bytes
 - Full 32-bit signed-result readback check
