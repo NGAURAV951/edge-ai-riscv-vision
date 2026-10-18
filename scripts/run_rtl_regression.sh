@@ -32,10 +32,22 @@ mkdir -p "$BUILD_DIR"
 
 run_case() {
     local case_name="$1"
-    local top_module="$2"
-    local source_a="$3"
-    local source_b="$4"
-    shift 4
+    shift
+    local top_module="$1"
+    shift
+
+    # Accept any number of RTL source files; -- separates them from pass markers.
+    local source_files=()
+    while (($#)); do
+        if [[ "$1" == "--" ]]; then
+            shift
+            break
+        fi
+        source_files+=("$1")
+        shift
+    done
+    (('${#source_files[@]} > 0')) || fail "No source files supplied for '$case_name'."
+
     local required_markers=("$@")
     local executable="$BUILD_DIR/$case_name.vvp"
     local compile_log="$BUILD_DIR/$case_name.compile.log"
@@ -44,10 +56,11 @@ run_case() {
     printf '\n============================================================\n'
     printf 'RTL CASE: %s\n' "$case_name"
     printf 'Top module: %s\n' "$top_module"
+    printf 'Source files: %s\n' "${#source_files[@]}"
     printf '============================================================\n'
 
     if ! "$IVERILOG_BIN" -g2012 -Wall -s "$top_module" \
-        -o "$executable" "$source_a" "$source_b" >"$compile_log" 2>&1; then
+        -o "$executable" "${source_files[@]}" >"$compile_log" 2>&1; then
         cat "$compile_log" >&2
         fail "Compilation failed for '$case_name'. See $compile_log"
     fi
@@ -84,6 +97,7 @@ run_case \
     "tb_dot_product" \
     "$ROOT_DIR/rtl/dot_product.s" \
     "$ROOT_DIR/rtl/tb_dot_product.s" \
+    -- \
     "SIGNED_DOT_PRODUCT_PASS result=-136" \
     "LATENCY_PASS cycles=16"
 
@@ -92,10 +106,13 @@ run_case \
     "tb_accelerator_regs" \
     "$ROOT_DIR/rtl/dot_product.s" \
     "$ROOT_DIR/rtl/accelerator_regs.s" \
+    "$ROOT_DIR/rtl/tb_accelerator_regs.s" \
+    -- \
     "STATUS_PASS" \
     "FULL_32BIT_RESULT_PASS" \
     "REGISTER_LATENCY_PASS cycles=17" \
     "ALL_REGISTER_TESTS_PASS"
+
 
 printf '\n============================================================\n'
 printf 'RTL_REGRESSION_PASS: 2/2 testbenches passed\n'
