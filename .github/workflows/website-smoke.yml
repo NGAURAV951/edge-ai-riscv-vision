@@ -7,13 +7,13 @@ on:
       - "website/**"
       - "ai/**"
       - "tests/**"
-      - "tests/**"
       - "requirements.txt"
       - ".github/workflows/website-smoke.yml"
   pull_request:
     paths:
       - "website/**"
       - "ai/**"
+      - "tests/**"
       - "requirements.txt"
       - ".github/workflows/website-smoke.yml"
   workflow_dispatch:
