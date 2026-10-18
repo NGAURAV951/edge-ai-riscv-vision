@@ -166,7 +166,7 @@ Run the Python tests:
 py -m pytest -q
 ~~~
 
-**Dataset note:** Some MNIST tests require a local dataset at data/mnist.npz. If that file is not present, those dataset-dependent tests will not run successfully until you supply the expected data file.
+**Dataset note:** Two MNIST evaluation tests require the optional local dataset at data/mnist.npz. When it is absent, pytest marks those tests as skipped; add the expected dataset file to run them.
 
 ## Animated website
 
