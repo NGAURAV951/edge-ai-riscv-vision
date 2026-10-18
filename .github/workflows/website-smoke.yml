@@ -55,7 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m website.server > /tmp/edge-ai-web.log 2>&1 &
+          python -u -m website.server > /tmp/edge-ai-web.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
 
@@ -67,9 +67,13 @@ jobs:
             fi
             sleep 1
           done
-          test "$ready" = true
+          if [[ "$ready" != true ]]; then
+            echo "Website server did not become ready. Server log:"
+            cat /tmp/edge-ai-web.log
+            exit 1
+          fi
 
-          curl -fsS http://127.0.0.1:8000/ | grep -qi "Edge Intelligence Lab"
+          curl -fsS http://127.0.0.1:8000/ | grep -qi "Edge AI Lab"
           curl -fsS 'http://127.0.0.1:8000/api/demo?brightness=1.0&seed=7' > /tmp/edge-ai-result.json
           python - <<'PY'
           import json
