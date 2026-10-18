@@ -1,7 +1,19 @@
+from pathlib import Path
+
 import numpy as np
+import pytest
 
 from ai.dataset import make_demo_frame
 from ai.inference import EdgeClassifier
+
+
+MNIST_DATASET = Path(__file__).resolve().parents[1] / "data" / "mnist.npz"
+
+
+def load_mnist_dataset():
+    if not MNIST_DATASET.is_file():
+        pytest.skip("Optional data/mnist.npz dataset is not available in this checkout.")
+    return np.load(MNIST_DATASET)
 
 
 def test_demo_frame_is_reproducible():
@@ -52,7 +64,7 @@ def test_accelerator_score_matches_reference():
 def test_int8_inference_matches_label():
     from ai.mnist_int8 import MNISTInt8Classifier
 
-    data = np.load("data/mnist.npz")
+    data = load_mnist_dataset()
     classifier = MNISTInt8Classifier()
 
     correct = 0
