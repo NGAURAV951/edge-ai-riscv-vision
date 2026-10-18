@@ -119,6 +119,7 @@ edge-ai-riscv-vision/
 ├── tests/       # Python tests
 ├── docs/        # Architecture documentation
 ├── website/     # Animated dashboard + local inference API
+├── android-app/ # Native Kotlin / Jetpack Compose companion app
 ├── projects/    # Additional project work
 ├── requirements.txt
 ├── LICENSE
@@ -167,6 +168,16 @@ py -m pytest -q
 ~~~
 
 **Dataset note:** Two MNIST evaluation tests require the optional local dataset at data/mnist.npz. When it is absent, pytest marks those tests as skipped; add the expected dataset file to run them.
+
+## Android app
+
+A native Kotlin + Jetpack Compose companion app with the animated EDGE//AI visual style, an interactive synthetic signal viewer, a preview prediction panel, architecture details, and a developer credit for Nikhil Gaurav.
+
+- Android source and build instructions: [android-app/README.md](android-app/README.md)
+- Automated APK build: [Android app build workflow](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/android-app.yml)
+- After a successful workflow, download the edge-ai-lab-debug-apk artifact from its run page.
+
+The app currently uses an illustrative on-device preview classifier. It does not yet package the Python inference engine or connect to a physical FPGA; timing and hardware integration are future work.
 
 ## Animated website
 
