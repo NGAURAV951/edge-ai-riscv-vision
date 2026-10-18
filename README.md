@@ -1,5 +1,7 @@
 # Edge-AI RISC-V Vision System
 
+[![RTL Regression](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/rtl-regression.yml/badge.svg?branch=main)](https://github.com/NGAURAV951/edge-ai-riscv-vision/actions/workflows/rtl-regression.yml)
+
 A hardware-aware Edge AI project exploring INT8 inference, tiled dot-product computation, embedded C driver modeling, and a SystemVerilog accelerator with a memory-mapped register interface.
 
 The project combines a Python software reference pipeline with simulation-based RTL verification. It is a simulation-first prototype: **physical FPGA deployment and RISC-V processor integration are future work**, not completed features.
@@ -162,6 +164,24 @@ py -m pytest -q
 ~~~
 
 **Dataset note:** Some MNIST tests require a local dataset at data/mnist.npz. If that file is not present, those dataset-dependent tests will not run successfully until you supply the expected data file.
+
+## Automated RTL regression
+
+Run the complete RTL regression from the repository root in an MSYS2 UCRT64 terminal (or another Bash terminal with Icarus Verilog installed):
+
+~~~bash
+bash scripts/run_rtl_regression.sh
+~~~
+
+The runner compiles and simulates both RTL testbenches, checks required success markers, detects failure markers, and exits with a non-zero status if a compile, simulation, or assertion check fails. A watchdog in each testbench also turns a stalled simulation into a clear timeout failure instead of waiting indefinitely.
+
+Generated simulation binaries and logs are written to `build/rtl-regression/`, which is covered by `.gitignore`. The GitHub Actions workflow runs this regression on pushes and pull requests that change RTL or the regression files; it can also be started manually from the Actions tab.
+
+Expected final summary:
+
+~~~text
+RTL_REGRESSION_PASS: 2/2 testbenches passed
+~~~
 
 ## Run the RTL dot-product test
 
