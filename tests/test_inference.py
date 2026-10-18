@@ -110,7 +110,7 @@ def test_tiled_mnist_matches_int8_classifier():
     from ai.mnist_int8 import MNISTInt8Classifier
     from ai.mnist_tiled_inference import MNISTTiledInt8Classifier
 
-    data = np.load("data/mnist.npz")
+    data = load_mnist_dataset()
 
     reference_classifier = MNISTInt8Classifier()
     tiled_classifier = MNISTTiledInt8Classifier()
