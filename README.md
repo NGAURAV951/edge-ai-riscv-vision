@@ -118,6 +118,7 @@ edge-ai-riscv-vision/
 ├── rtl/         # Dot-product RTL, register interface, and testbenches
 ├── tests/       # Python tests
 ├── docs/        # Architecture documentation
+├── website/     # Animated dashboard + local inference API
 ├── projects/    # Additional project work
 ├── requirements.txt
 ├── LICENSE
@@ -166,6 +167,19 @@ py -m pytest -q
 ~~~
 
 **Dataset note:** Some MNIST tests require a local dataset at data/mnist.npz. If that file is not present, those dataset-dependent tests will not run successfully until you supply the expected data file.
+
+## Animated website
+
+This repository includes an animated responsive dashboard with an interactive synthetic-signal lab, model output panel, architecture walkthrough, and CI verification view.
+
+Run it locally to connect the interface to the **actual Python classifier** and software benchmark:
+
+~~~powershell
+py -m pip install -r requirements.txt
+py -m website.server
+~~~
+
+Then open http://127.0.0.1:8000. The hosted GitHub Pages version runs as a static preview; local Python timing appears only when using the local server. Follow the website-specific setup notes in [website/README.md](website/README.md).
 
 ## Automated RTL regression
 
