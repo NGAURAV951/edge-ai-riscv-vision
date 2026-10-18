@@ -1,0 +1,86 @@
+name: Website smoke tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+      - "ai/**"
+      - "requirements.txt"
+      - ".github/workflows/website-smoke.yml"
+  pull_request:
+    paths:
+      - "website/**"
+      - "ai/**"
+      - "requirements.txt"
+      - ".github/workflows/website-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Check Python and JavaScript syntax
+        run: |
+          python -m compileall -q website
+          node --check website/public/app.js
+
+      - name: Run Python unit tests
+        run: python -m pytest -q
+
+      - name: Smoke test local website and inference API
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m website.server > /tmp/edge-ai-web.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8000/api/health > /tmp/edge-ai-health.json; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          test "$ready" = true
+
+          curl -fsS http://127.0.0.1:8000/ | grep -qi "Edge Intelligence Lab"
+          curl -fsS 'http://127.0.0.1:8000/api/demo?brightness=1.0&seed=7' > /tmp/edge-ai-result.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          health = json.loads(Path("/tmp/edge-ai-health.json").read_text())
+          result = json.loads(Path("/tmp/edge-ai-result.json").read_text())
+          assert health["ok"] is True
+          assert result["mode"] == "python-api"
+          assert result["label"] in {"SAFE", "ALERT"}
+          assert len(result["features"]) == 3
+          assert result["accelerator_match"] is True
+          assert result["latency_ms"] > 0
+          assert result["fps"] > 0
+          print("WEBSITE_API_PASS:", result["label"], result["features"], "software benchmark available")
+          PY
