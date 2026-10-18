@@ -46,7 +46,7 @@ run_case() {
         source_files+=("$1")
         shift
     done
-    (('${#source_files[@]} > 0')) || fail "No source files supplied for '$case_name'."
+    (( ${#source_files[@]} > 0 )) || fail "No source files supplied for '$case_name'."
 
     local required_markers=("$@")
     local executable="$BUILD_DIR/$case_name.vvp"
