@@ -118,7 +118,7 @@ edge-ai-riscv-vision/
 ├── rtl/         # Dot-product RTL, register interface, and testbenches
 ├── tests/       # Python tests
 ├── docs/        # Architecture documentation
-├── website/     # Animated dashboard + local inference API
+├── website/     # Responsive Edge AI Lab website + local inference API
 ├── android-app/ # Native Kotlin / Jetpack Compose companion app
 ├── projects/    # Additional project work
 ├── requirements.txt
@@ -179,9 +179,9 @@ A native Kotlin + Jetpack Compose companion app with the animated EDGE//AI visua
 
 The app currently uses an illustrative on-device preview classifier. It does not yet package the Python inference engine or connect to a physical FPGA; timing and hardware integration are future work.
 
-## Animated website
+## Edge AI Lab website
 
-This repository includes an animated responsive dashboard with an interactive synthetic-signal lab, model output panel, architecture walkthrough, and CI verification view.
+This repository includes a clean, responsive Edge AI Lab website with an interactive synthetic-signal explorer, model output panel, architecture walkthrough, and CI verification view.
 
 Run it locally to connect the interface to the **actual Python classifier** and software benchmark:
 
