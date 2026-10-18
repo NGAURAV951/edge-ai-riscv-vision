@@ -83,8 +83,11 @@ The register interface exposes the complete signed 32-bit accumulator result acr
 The project includes multiple independent checks:
 - Python unit tests for demo inference and accelerator/reference score matching
 - A tiled dot-product comparison against NumPy
+- 105 RTL dot-product cases: five directed edge cases and 100 deterministic pseudo-random input-vector tests
 - Comparison of tiled and non-tiled MNIST predictions
 - RTL testbenches for signed dot-product arithmetic and latency
+- Deterministic directed and pseudo-random RTL tests: five edge-case scenarios plus 100 reproducible randomized vectors
+- Optional Yosys generic synthesis/statistics report generated in CI
 - RTL testbench for register writes, status, and all four result bytes
 - Full 32-bit signed-result readback check
 - A C driver-model test for register-control concepts
@@ -173,15 +176,25 @@ Run the complete RTL regression from the repository root in an MSYS2 UCRT64 term
 bash scripts/run_rtl_regression.sh
 ~~~
 
-The runner compiles and simulates both RTL testbenches, checks required success markers, detects failure markers, and exits with a non-zero status if a compile, simulation, or assertion check fails. A watchdog in each testbench also turns a stalled simulation into a clear timeout failure instead of waiting indefinitely.
+The runner compiles and simulates all three RTL testbenches, including 100 deterministic pseudo-random dot-product cases and five directed edge cases. It checks required success markers, detects failure markers, and exits with a non-zero status if a compile, simulation, or assertion check fails. A watchdog in each testbench also turns a stalled simulation into a clear timeout failure instead of waiting indefinitely.
 
 Generated simulation binaries and logs are written to `build/rtl-regression/`, which is covered by `.gitignore`. The GitHub Actions workflow runs this regression on pushes and pull requests that change RTL or the regression files; it can also be started manually from the Actions tab.
 
 Expected final summary:
 
 ~~~text
-RTL_REGRESSION_PASS: 2/2 testbenches passed
+RTL_REGRESSION_PASS: 3/3 testbenches passed
 ~~~
+
+## Yosys synthesis statistics
+
+A separate GitHub Actions workflow installs Yosys and attempts a generic synthesis/statistics pass for the register-interface top module. To run it locally:
+
+~~~bash
+bash scripts/run_yosys_synthesis.sh
+~~~
+
+The report is written to `build/synthesis/yosys-stat.log` and is also uploaded by the workflow as the `yosys-synthesis-report` artifact. These are preliminary generic logic statistics only; they are not FPGA-specific LUT/BRAM/DSP counts, place-and-route timing, power measurements, or proof of physical deployment.
 
 ## Run the RTL dot-product test
 
@@ -206,7 +219,7 @@ This test checks register writes, accelerator start, busy/done status, result re
 ## Current limitations and future work
 
 Future development could include:
-- Synthesizing the RTL and measuring area and timing
+- FPGA-specific synthesis, place-and-route, and timing closure
 - Deploying to an FPGA board
 - Integrating a RISC-V processor and a real bus interface
 - Connecting the software driver to the hardware implementation
