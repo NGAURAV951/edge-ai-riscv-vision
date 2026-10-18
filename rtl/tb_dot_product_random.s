@@ -78,9 +78,9 @@ module tb_dot_product_random;
                     end
                     default: begin
                         random_word = next_random();
-                        a_bytes[k*8 +: 8] = random_word[7:0];
+                        a_bytes[k*8 +: 8] = random_word[31:24];
                         random_word = next_random();
-                        b_bytes[k*8 +: 8] = random_word[7:0];
+                        b_bytes[k*8 +: 8] = random_word[31:24];
                     end
                 endcase
 
