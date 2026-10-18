@@ -1,0 +1,45 @@
+name: Yosys synthesis report
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "rtl/**"
+      - "scripts/run_yosys_synthesis.sh"
+      - ".github/workflows/yosys-synthesis.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "rtl/**"
+      - "scripts/run_yosys_synthesis.sh"
+      - ".github/workflows/yosys-synthesis.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthesis:
+    name: Generic RTL synthesis statistics
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Yosys
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes yosys
+
+      - name: Generate synthesis report
+        run: bash scripts/run_yosys_synthesis.sh
+
+      - name: Upload synthesis report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yosys-synthesis-report
+          path: build/synthesis/yosys-stat.log
+          if-no-files-found: warn
+          retention-days: 30
