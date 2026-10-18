@@ -2,6 +2,12 @@
 
 module tb_dot_product;
 
+    // Fail fast rather than hang forever if the DUT never completes.
+    initial begin
+        #100000;
+        $fatal(1, "WATCHDOG_TIMEOUT: dot-product test did not finish within 100 us");
+    end
+
     localparam N = 16;
 
     logic clk;
