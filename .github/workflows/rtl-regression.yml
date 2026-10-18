@@ -1,0 +1,36 @@
+name: RTL regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "rtl/**"
+      - "scripts/run_rtl_regression.sh"
+      - ".github/workflows/rtl-regression.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "rtl/**"
+      - "scripts/run_rtl_regression.sh"
+      - ".github/workflows/rtl-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rtl-regression:
+    name: Icarus Verilog simulation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Icarus Verilog
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes iverilog
+
+      - name: Run RTL regression
+        run: bash scripts/run_rtl_regression.sh
