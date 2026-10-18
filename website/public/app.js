@@ -159,34 +159,44 @@
     let result;
 
     try {
-      const query = new URLSearchParams({
-        brightness: String(brightness),
-        seed: String(seed)
-      });
-      const response = await fetch("/api/demo?" + query.toString(), {
-        method: "GET",
-        cache: "no-store",
-        headers: { "Accept": "application/json" }
-      });
-      if (!response.ok) throw new Error("Local inference API unavailable");
-      const payload = await response.json();
-      if (payload.mode !== "python-api" || !Array.isArray(payload.features)) {
-        throw new Error("Unexpected demo API response");
+      // GitHub Pages is static hosting: it cannot run the Python API.
+      // Use an explicitly labelled browser preview there, and call the real
+      // Python endpoint only when this dashboard is served locally.
+      const isGitHubPages = window.location.hostname.endsWith("github.io");
+      if (isGitHubPages) {
+        result = fallbackInference(brightness);
+      } else {
+        const query = new URLSearchParams({
+          brightness: String(brightness),
+          seed: String(seed)
+        });
+        const response = await fetch("/api/demo?" + query.toString(), {
+          method: "GET",
+          cache: "no-store",
+          headers: { "Accept": "application/json" }
+        });
+        if (!response.ok) throw new Error("Local inference API unavailable");
+        const payload = await response.json();
+        if (payload.mode !== "python-api" || !Array.isArray(payload.features)) {
+          throw new Error("Unexpected demo API response");
+        }
+        result = payload;
       }
-      result = payload;
-    } catch (_) {
-      result = fallbackInference(brightness);
-    }
 
-    renderResult(result);
-    if (result.mode === "python-api" && result.accelerator_match === false) {
-      showToast("Check the model/reference score comparison before using this result.");
+      renderResult(result);
+      if (result.mode === "python-api" && result.accelerator_match === false) {
+        showToast("Check the model/reference score comparison before using this result.");
+      }
+    } catch (error) {
+      console.error("Inference display failed:", error);
+      showToast("The result could not be displayed. Refresh the page and try again.");
+    } finally {
+      runButton.disabled = false;
+      runLabel.textContent = "Run inference";
+      runButton.classList.remove("is-running");
+      $(".signal-visual").classList.remove("is-processing");
+      isRunning = false;
     }
-    runButton.disabled = false;
-    runLabel.textContent = "Run inference";
-    runButton.classList.remove("is-running");
-    $(".signal-visual").classList.remove("is-processing");
-    isRunning = false;
   }
 
   function generateFrame() {
