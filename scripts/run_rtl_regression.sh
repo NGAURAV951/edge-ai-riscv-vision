@@ -23,6 +23,7 @@ done
 for source_file in \
     "$ROOT_DIR/rtl/dot_product.s" \
     "$ROOT_DIR/rtl/tb_dot_product.s" \
+    "$ROOT_DIR/rtl/tb_dot_product_random.s" \
     "$ROOT_DIR/rtl/accelerator_regs.s" \
     "$ROOT_DIR/rtl/tb_accelerator_regs.s"; do
     [[ -f "$source_file" ]] || fail "Required RTL source file is missing: $source_file"
@@ -102,6 +103,14 @@ run_case \
     "LATENCY_PASS cycles=16"
 
 run_case \
+    "dot_product_random" \
+    "tb_dot_product_random" \
+    "$ROOT_DIR/rtl/dot_product.s" \
+    "$ROOT_DIR/rtl/tb_dot_product_random.s" \
+    -- \
+    "RANDOMIZED_DOT_PRODUCT_PASS cases=105 random_cases=100 directed_cases=5"
+
+run_case \
     "accelerator_regs" \
     "tb_accelerator_regs" \
     "$ROOT_DIR/rtl/dot_product.s" \
@@ -115,6 +124,6 @@ run_case \
 
 
 printf '\n============================================================\n'
-printf 'RTL_REGRESSION_PASS: 2/2 testbenches passed\n'
+printf 'RTL_REGRESSION_PASS: 3/3 testbenches passed\n'
 printf 'Build output: %s\n' "$BUILD_DIR"
 printf '============================================================\n'
